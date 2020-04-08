@@ -50,7 +50,7 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 	return block
 }
 
-//引入哈希
+//3.引入哈希
 func (block *Block) SetHash() {
 	//blockInfo := make([]byte,10,20)
 	//hash := [32]byte{}
@@ -61,10 +61,35 @@ func (block *Block) SetHash() {
 	block.Hash = hash[:]
 }
 
+//4.引入区块链
+type BlockChain struct {
+	//定义一个区块链数组
+	blocks []*Block
+}
+
+//5.定义一个区块链
+func NewBlockChain() *BlockChain {
+	//创建一个创世块 并作为第一个区块添加到区块中
+	genesisBlock := GenesisBlock()
+	return &BlockChain{
+		blocks: []*Block{genesisBlock},
+	}
+}
+
+//创世块
+func GenesisBlock() *Block {
+	//block := NewBlock("创世块",[]byte{})
+	//return block
+	return NewBlock("创世块", []byte{})
+}
+
 func main() {
-	block := NewBlock("测试", []byte{})
-	fmt.Println(block.PrevHash)
-	fmt.Println(block.Data)
-	fmt.Println(block.Hash)
-	fmt.Printf("区块数据: %s\n", block.Data)
+	bc := NewBlockChain()
+	for i, block := range bc.blocks {
+		fmt.Printf("=====当前区块高度: %d\n", i)
+		fmt.Printf("前区块哈希值: %x\n", block.PrevHash)
+		fmt.Printf("当前区块哈希值: %x\n", block.Hash)
+		fmt.Printf("区块数据: %s\n", block.Data)
+	}
+
 }
