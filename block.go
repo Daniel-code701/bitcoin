@@ -88,14 +88,26 @@ func (block *Block) SetHash() {
 		blockInfo []byte
 	)
 	//1.拼装数据
-	blockInfo = append(blockInfo, Uint64ToByte(block.Version)...)
-	blockInfo = append(blockInfo, block.PrevHash...)
-	blockInfo = append(blockInfo, block.MerkelRoot...)
-	blockInfo = append(blockInfo, Uint64ToByte(block.TimeStamp)...)
-	blockInfo = append(blockInfo, Uint64ToByte(block.Difficulty)...)
-	blockInfo = append(blockInfo, Uint64ToByte(block.Nonce)...)
-	blockInfo = append(blockInfo, Uint64ToByte(block.Version)...)
-	blockInfo = append(blockInfo, block.Data...)
+	//blockInfo = append(blockInfo, Uint64ToByte(block.Version)...)
+	//blockInfo = append(blockInfo, block.PrevHash...)
+	//blockInfo = append(blockInfo, block.MerkelRoot...)
+	//blockInfo = append(blockInfo, Uint64ToByte(block.TimeStamp)...)
+	//blockInfo = append(blockInfo, Uint64ToByte(block.Difficulty)...)
+	//blockInfo = append(blockInfo, Uint64ToByte(block.Nonce)...)
+	//blockInfo = append(blockInfo, Uint64ToByte(block.Version)...)
+	//blockInfo = append(blockInfo, block.Data...)
+	tmp := [][]byte{
+		Uint64ToByte(block.Version),
+		block.PrevHash,
+		block.MerkelRoot,
+		Uint64ToByte(block.TimeStamp),
+		Uint64ToByte(block.Difficulty),
+		Uint64ToByte(block.Nonce),
+		Uint64ToByte(block.Version),
+		block.Data,
+	}
+	//将二维的切片数组连接起来返回一个一维的切片
+	blockInfo = bytes.Join(tmp, []byte{})
 	//2.sha256
 	hash := sha256.Sum256(blockInfo)
 	block.Hash = hash[:]
