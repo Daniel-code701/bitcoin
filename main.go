@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"crypto/sha256"
+	"fmt"
+)
 
 /*
 1.简单版
@@ -38,17 +41,30 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 
 	block = &Block{
 		PrevHash: prevBlockHash,
-		Hash:     []byte{}, //先填空 后面再计算 //TODO
+		Hash:     []byte{},
 		Data:     []byte(data),
 	}
+
+	block.SetHash()
+
 	return block
 }
 
 //引入哈希
+func (block *Block) SetHash() {
+	//blockInfo := make([]byte,10,20)
+	//hash := [32]byte{}
+	//1.拼装数据
+	blockInfo := append(block.PrevHash, block.Data...)
+	//2.sha256
+	hash := sha256.Sum256(blockInfo)
+	block.Hash = hash[:]
+}
 
 func main() {
 	block := NewBlock("测试", []byte{})
 	fmt.Println(block.PrevHash)
 	fmt.Println(block.Data)
+	fmt.Println(block.Hash)
 	fmt.Printf("区块数据: %s\n", block.Data)
 }
