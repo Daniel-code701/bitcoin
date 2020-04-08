@@ -70,3 +70,8 @@ func (pow *ProofOfWork) Run() ([]byte, uint64) {
 	}
 	return hash[:], nonce
 }
+
+//4.提供一个校验函数
+func main() {
+
+}

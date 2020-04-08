@@ -81,7 +81,6 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 		Hash:       []byte{},
 		Data:       []byte(data),
 	}
-
 	block.SetHash()
 
 	return block

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
-	"fmt"
 	"log"
 	"time"
 )
@@ -75,15 +74,8 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 		Data:       []byte(data),
 	}
 
-	//block.SetHash()
-	//创建一个pow的对象
-	pow := NewProofOWork(block)
-	//查找目标的随机数 不停进行哈希运算
-	hash, nonce := pow.Run()
+	block.SetHash()
 
-	//根据运算结果对数据进行更新
-	block.Hash = hash
-	block.Nonce = nonce
 	return block
 }
 
@@ -152,17 +144,4 @@ func GenesisBlock() *Block {
 	//block := NewBlock("创世块",[]byte{})
 	//return block
 	return NewBlock("创世块", []byte{})
-}
-
-func main() {
-	bc := NewBlockChain()
-	bc.AddBlock("增加一个区块")
-	bc.AddBlock("增加二个区块")
-	for i, block := range bc.blocks {
-		fmt.Printf("=====当前区块高度: %d\n", i)
-		fmt.Printf("前区块哈希值: %x\n", block.PrevHash)
-		fmt.Printf("当前区块哈希值: %x\n", block.Hash)
-		fmt.Printf("区块数据: %s\n", block.Data)
-	}
-
 }
