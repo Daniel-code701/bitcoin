@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
-	"fmt"
+	"github.com/boltdb/bolt"
 	"log"
 	"time"
 )
@@ -26,6 +26,9 @@ import (
 2.更新哈希计算函数
 3.优化代码
 */
+
+const blockChainDb = "blockChainDb"
+const blockBucket = "blockBucket"
 
 //1.定义结构
 type Block struct {
@@ -56,6 +59,10 @@ func Uint64ToByte(num uint64) []byte {
 		log.Panic(err)
 	}
 	return buffer.Bytes()
+}
+func (Block *Block) toByte() []byte {
+	//TODO
+	return []byte{}
 }
 
 //2.创建区块
@@ -116,28 +123,73 @@ func (block *Block) SetHash() {
 //4.引入区块链
 type BlockChain struct {
 	//定义一个区块链数组
-	blocks []*Block
+	//blocks []*Block
+
+	//bolt版本改造
+	db   *bolt.DB
+	tail []byte //存储最后一个区块的哈希
 }
 
 //5.定义一个区块链
 func NewBlockChain() *BlockChain {
 	//创建一个创世块 并作为第一个区块添加到区块中
-	genesisBlock := GenesisBlock()
+	//genesisBlock := GenesisBlock()
+	//return &BlockChain{
+	//	blocks: []*Block{genesisBlock},
+	//}
+
+	//bolt版本改造
+	var (
+		db       *bolt.DB
+		err      error
+		lastHash []byte
+	)
+
+	//1.打开数据库
+	if db, err = bolt.Open(blockChainDb, 0600, nil); err != nil {
+		log.Panic("打开数据库失败")
+	}
+	defer db.Close()
+	//2.将要操作数据库
+	db.Update(func(tx *bolt.Tx) error {
+		//2.找到抽屉bucket(如果没有 就创建)
+		bucket := tx.Bucket([]byte(blockBucket))
+		if bucket == nil {
+			//没有抽屉 需要创建
+			if bucket, err = tx.CreateBucket([]byte(blockBucket)); err != nil {
+				log.Panic("创建bucket失败")
+			}
+
+			//3.写数据
+			//创建一个创世块 并作为第一个区块添加到区块中
+			genesisBlock := GenesisBlock()
+			//hash作为key block的字节流作为value
+			bucket.Put(genesisBlock.Hash, genesisBlock.toByte())
+			bucket.Put([]byte("LastHashKey"), genesisBlock.Hash)
+			lastHash = genesisBlock.Hash
+		} else {
+			lastHash = bucket.Get([]byte("LastHashKey"))
+		}
+
+		return nil
+	})
+
 	return &BlockChain{
-		blocks: []*Block{genesisBlock},
+		db,
+		lastHash,
 	}
 }
 
 //6.添加区块
 func (bc *BlockChain) AddBlock(data string) {
-	//如何获取 前区块哈希?
-	//获取最后一个区块
-	lastBlock := bc.blocks[len(bc.blocks)-1]
-	prevHash := lastBlock.Hash
-	//a.创建新的区块
-	block := NewBlock(data, prevHash)
-	//b.添加到区块链数组中
-	bc.blocks = append(bc.blocks, block)
+	////如何获取 前区块哈希?
+	////获取最后一个区块
+	//lastBlock := bc.blocks[len(bc.blocks)-1]
+	//prevHash := lastBlock.Hash
+	////a.创建新的区块
+	//block := NewBlock(data, prevHash)
+	////b.添加到区块链数组中
+	//bc.blocks = append(bc.blocks, block)
 }
 
 //创世块
@@ -151,11 +203,11 @@ func main() {
 	bc := NewBlockChain()
 	bc.AddBlock("增加一个区块")
 	bc.AddBlock("增加二个区块")
-	for i, block := range bc.blocks {
-		fmt.Printf("=====当前区块高度: %d\n", i)
-		fmt.Printf("前区块哈希值: %x\n", block.PrevHash)
-		fmt.Printf("当前区块哈希值: %x\n", block.Hash)
-		fmt.Printf("区块数据: %s\n", block.Data)
-	}
+	//for i, block := range bc.blocks {
+	//	fmt.Printf("=====当前区块高度: %d\n", i)
+	//	fmt.Printf("前区块哈希值: %x\n", block.PrevHash)
+	//	fmt.Printf("当前区块哈希值: %x\n", block.Hash)
+	//	fmt.Printf("区块数据: %s\n", block.Data)
+	//}
 
 }
